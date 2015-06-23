@@ -219,9 +219,8 @@ modelFit$finalModel
 testPC<-predict(preProc, log10(testing[,-58]+1))
 confusionMatrix(testing$type, predict(modelFit, testPC))
 
-#alternative - sets the number of PCs
-## issue - not working "invalid mtry" in randomForest.default
-modelFit<- train(training$type~.,methods = "glm", preProcess = "pca", data = training)
+# alternative - sets the number of PCs
+modelFit<- train(training$type~.,method = "glm", preProcess = "pca", data = training)
 modelFit
 modelFit$finalModel
 confusionMatrix(testing$type, predict(modelFit, testing))
@@ -290,7 +289,7 @@ qplot(age,wage,colour=education,data=training)
 modFit<-train(wage~age+jobclass+education, method="lm", data=training)
 finMod<-modFit$finalModel
 print(modFit)
-# diagnostic plot, residuals ar diff betweeen real and predicted values)
+# diagnostic plot, residuals = diff betweeen real and predicted values)
 plot(finMod,1,pch=19,cex=0.5, col= "#00000010")
 # residuals should be along zero on y axis
 qplot(finMod$fitted, finMod$residuals, colour=race, data=training)
