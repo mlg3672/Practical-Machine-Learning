@@ -38,6 +38,38 @@ modFit<-train(species~., method="party", data = training)
 modFit<-train(species~., method="tree", data = training)
 
 # Lecture 20- Bagging -------------------
+# basic ideas: (1) average models for better predictor
+#              (2) resample cases and recalculate predictions
+#              (3) average or majority vote from predictors
+library(ElemStatLearn)
+data(ozone, package = "ElemStatLearn")
+ozone<- ozone[order(ozone$ozone),]
+head(ozone)
+ll<-matrix(NA, nrow = 10, ncol = 155)
+for (i in 1:10) {
+  ss<-sample( 1: dim(ozone)[1],replace = T)
+  ozone0<-ozone[ss,]
+  ozone0<-ozone0[order(ozone0$ozone),]
+  loess0<-loess(temperature~ozone, data = ozone0, span = 0.2)
+  ll[i,]<-predic(loess0,newdata= data.frame(ozone=1:155))
+}
+
+plot(ozone$ozone,ozone$temperature, pch=19,cex = 0.5)
+for (i in 1:10) { lines(1:155,ll[i,],col="grey",lwd=2)}
+lines(1:155, apply(ll,2,mean),col="red",lwd=2)
+
+predictors = data.frame(ozone=ozone$ozone)
+temperature = ozone$temperature
+treebag<- bag(predictors, temperature, B=10, bagControl = 
+                bagControl(fit = ctreeBag$fit(),
+                           predict = ctreeBag$pred(),
+                           aggregate = ctreeBag$aggregate()))
+plot(ozone$ozone, temperature, col = "lightgrey", pch=19)
+points(ozone$ozone, predict(treebag$fit[[1]]$fit,predictors),pch=19, col = "red")
+points(ozone$ozone, predict(treebag,predictors),pch = 19, col = "blue")
+# notes:  bagging is useful for nonlinear models
+#         other bagging models: bagEarth, treebag, bagFDA
+
 # Lecture 21- Random Forests ------------
 # Lecture 22- Boosting ------------------
 # Lecture 23- Model Based Prediction -----
