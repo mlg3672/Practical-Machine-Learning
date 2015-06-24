@@ -93,5 +93,17 @@ table(pred, testing$Species)
 qplot(Petal.Width, Petal.Length, colour=predRight, data=testing, main="new data Predicting")
 
 # Lecture 22- Boosting ------------------
+# basic ideas: (1) take a large number of weak predictors
+#               (2) weight and sum (3) average together
+# boosting in R with gbm, mboost, ada, gamBoost
+library(ISLR); data(Wage)
+library(ggplot2); library(caret)
+wage<- subset(Wage, select=c(logwage))
+inTrain<-createDataPartition(y= Wage$wage, p=0.7, list=FALSE)
+training<-Wage[inTrain,]
+testing<-Wage[-inTrain,]
+modFit<-train(wage~., method="gbm", data = training, verbose = FALSE)
+print(modFit)
+qplot(predict(modFit, testing),wage, data=testing)
 
 # Lecture 23- Model Based Prediction -----
