@@ -224,6 +224,7 @@ modelFit<- train(training$type~.,method = "glm", preProcess = "pca", data = trai
 modelFit
 modelFit$finalModel
 confusionMatrix(testing$type, predict(modelFit, testing))
+predict(modelFit, newdata = testing)
 
 # Lecture 17 - Predicting with Regression ---------
 # key ideas:  (1) fit simiple regresssion model
@@ -270,9 +271,10 @@ library(ISLR)
 library(ggplot2)
 library(caret)
 data("Wage")
-# select out log wage dataset
-wage<-subset(Wage, select = c(logwage))
-summary(wage)
+# select out logwage col in dataset
+Wage<-subset(Wage, select =-c(logwage))
+summary(Wage)
+# split data to train and test sets
 inTrain<-createDataPartition(y=Wage$wage,p=0.7,list=FALSE)
 training<-Wage[inTrain,]
 testing<-Wage[-inTrain,]
