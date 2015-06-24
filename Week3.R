@@ -25,17 +25,17 @@ testing<-iris[-inTrain,]
 dim(training);dim(testing)
 qplot(Petal.Width, Sepal.Width, colour = Species, data = training)
 library(caret)
-modFit<-train(species~., method="rpart", data = training)
+library(rpart)
+library(rpart.plot)
+modFit<-train(Species~., method="rpart", data = training)
 print(modFit$finalModel)
-plot(modFit$finalMOdel, uniform=TRUE, main= "Classification Tree")
+plot(modFit$finalModel, uniform=TRUE, main= "Classification Tree")
 text(modFit$finalModel, use.n= TRUE, all = TRUE, cex = 0.8)
 library(rattle)
 fancyRpartPlot(modFit$finalModel)
 predict(modFit, newdata = testing)
 
-# other tree building options
-modFit<-train(species~., method="party", data = training)
-modFit<-train(species~., method="tree", data = training)
+# other tree building options - "party", "tree"
 
 # Lecture 20- Bagging -------------------
 # basic ideas: (1) average models for better predictor
@@ -68,8 +68,30 @@ plot(ozone$ozone, temperature, col = "lightgrey", pch=19)
 points(ozone$ozone, predict(treebag$fit[[1]]$fit,predictors),pch=19, col = "red")
 points(ozone$ozone, predict(treebag,predictors),pch = 19, col = "blue")
 # notes:  bagging is useful for nonlinear models
-#         other bagging models: bagEarth, treebag, bagFDA
+#         other bagging models: bagEarth (earth), treebag-(ipred, plyr), bagFDA-(packages: earth,mda)
 
 # Lecture 21- Random Forests ------------
+# Basic ideas : (1) bootstrap samples, (2) at each split bootstrap variable
+#               (3) grow multiple trees (4) vote 
+data("iris")
+library(ggplot2)
+inTrain<-createDataPartition(y= iris$Species, p=0.7, list=FALSE)
+training<-iris[inTrain,]
+testing<-iris[-inTrain,]
+library(caret)
+modFit<-train(Species~., method="rf", data = training, prox = T)
+modFit
+getTree(modFit, k=2) # see second tree
+irisP<- classCenter(training[,c(3,4)],training$Species, modFit$finalModel$prox)
+irisP$Species<-rownames(irisP)
+p<-qplot(Petal.Width, Petal.Length, col=Species, data=training)
+p + geom_point(aes(x=Petal.Width, y = Petal.Length, col = Species), size = 5, shape=4, data=irisP)
+# predict new values
+pred<-predict(modFit, testing)
+testing$predRight<-pred==testing$Species
+table(pred, testing$Species)
+qplot(Petal.Width, Petal.Length, colour=predRight, data=testing, main="new data Predicting")
+
 # Lecture 22- Boosting ------------------
+
 # Lecture 23- Model Based Prediction -----
