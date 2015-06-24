@@ -81,8 +81,9 @@ testing<-iris[-inTrain,]
 library(caret)
 modFit<-train(Species~., method="rf", data = training, prox = T)
 modFit
-getTree(modFit, k=2) # see second tree
+getTree(modFit$finalModel, k=2) # see second tree
 irisP<- classCenter(training[,c(3,4)],training$Species, modFit$finalModel$prox)
+irisP<-as.data.frame(irisP)
 irisP$Species<-rownames(irisP)
 p<-qplot(Petal.Width, Petal.Length, col=Species, data=training)
 p + geom_point(aes(x=Petal.Width, y = Petal.Length, col = Species), size = 5, shape=4, data=irisP)
@@ -98,7 +99,8 @@ qplot(Petal.Width, Petal.Length, colour=predRight, data=testing, main="new data 
 # boosting in R with gbm, mboost, ada, gamBoost
 library(ISLR); data(Wage)
 library(ggplot2); library(caret)
-wage<- subset(Wage, select=c(logwage))
+library(gbm)
+Wage<- subset(Wage, select=-c(logwage))
 inTrain<-createDataPartition(y= Wage$wage, p=0.7, list=FALSE)
 training<-Wage[inTrain,]
 testing<-Wage[-inTrain,]
@@ -107,3 +109,23 @@ print(modFit)
 qplot(predict(modFit, testing),wage, data=testing)
 
 # Lecture 23- Model Based Prediction -----
+# basic idea: (1) assume data probabilistic (2) Bayes theorm to identify classifiers
+# build a prob model that Y equals (belongs to class) K given vars X
+# Linear discriminant analysis (LDA) - use normal dist, same covar, lines divide classes
+# Quadratic  - use normal dist, use diff covar, polynomials divide classes
+# Naive Bayes - assume independence between predictors 
+#   applications: categorical, binary data, text classification
+
+inTrain<-createDataPartition(y= iris$Species, p=0.7, list=FALSE)
+training<-iris[inTrain,]
+testing<-iris[-inTrain,]
+library(caret)
+library(klaR)
+library(MASS)
+modlda<-train(Species~., method="lda", data = training) # LDA
+modnb<-train(Species~., method="nb", data = training) # Naive Bayes
+plda<-predict(modlda, testing); pnb<-predict(modnb, testing)
+table(plda,testing$Species)
+table(pnb,testing$Species)
+equalPredictions = (plda==pnb)
+qplot(Petal.Width, Sepal.Width, colour=equalPredictions, data=testing, main="compare nb and lda")
